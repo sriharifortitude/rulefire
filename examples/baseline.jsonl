@@ -1,0 +1,5 @@
+{"Image": "C:\\Windows\\System32\\certutil.exe", "CommandLine": "certutil -hashfile setup.msi SHA256", "User": "CORP\\build"}
+{"Image": "C:\\Windows\\System32\\certutil.exe", "CommandLine": "certutil -urlcache -f http://pki.corp.example/crl/issuing.crl issuing.crl", "User": "NT AUTHORITY\\SYSTEM"}
+{"Image": "C:\\Windows\\System32\\certutil.exe", "CommandLine": "certutil -store my", "User": "CORP\\alice"}
+{"Image": "C:\\Program Files\\Git\\mingw64\\bin\\curl.exe", "CommandLine": "curl -sSfL https://github.com/", "User": "CORP\\bob"}
+{"Image": "C:\\Windows\\System32\\cmd.exe", "CommandLine": "cmd /c echo certutil -urlcache -f is blocked here", "User": "CORP\\alice"}

