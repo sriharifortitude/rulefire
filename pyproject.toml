@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rulefire"
+version = "0.1.0"
+description = "Regression tests for Sigma detection rules: events each rule must and must not fire on, run as a CI gate."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{ name = "Sri Hari Manikandan" }]
+keywords = ["sigma", "detection-engineering", "siem", "testing", "ci"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Security",
+  "Topic :: Software Development :: Testing",
+  "Typing :: Typed",
+]
+dependencies = ["PyYAML>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "mypy>=1.13", "ruff>=0.8", "types-PyYAML"]
+differential = ["pySigma==2.0.1", "pySigma-backend-sqlite==2.1.1"]
+
+[project.scripts]
+rulefire = "rulefire.cli:main"
+
+[project.urls]
+Repository = "https://github.com/sriharifortitude/rulefire"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rulefire"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "ANN", "S", "PL", "N", "C4", "T20"]
+# ANN401: events are arbitrary JSON, so their values are typed Any on purpose.
+ignore = ["PLR2004", "S101", "PLR0913", "PLR0911", "PLR0912", "C901", "ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "ANN", "PLR", "T20"]
+"scripts/*" = ["T20", "S608", "PLR", "ANN401"]
+"src/rulefire/cli.py" = ["T20"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src", "tests"]
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
