@@ -1,0 +1,9 @@
+allow:
+  - fingerprint: 98c810ba2e9362c86c5ced9aba917cc1bb1be886d4a2aea3381baf4a5db98bff
+    reason: >-
+      The type annotation "tokens: list[Token]" in src/rulefire/values.py. credsweep's generic
+      rule reads a name containing "token" followed by punctuation as an assignment.
+  - fingerprint: 2de5f867b91411328a09cc0cc35650be6c42bff08c89018b2c667453248785a1
+    reason: >-
+      The keyword argument "tokens=[base64.b64encode(...)...]" in src/rulefire/values.py: code,
+      not a value.

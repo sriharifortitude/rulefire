@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: ruff, mypy, pytest, the examples and the README's demo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: ruff check src tests scripts
+      - run: ruff format --check src tests scripts
+      - run: mypy
+      - run: pytest -q
+      - name: Build the wheel and run the examples from it
+        run: |
+          pip install build && python -m build --wheel
+          pip install --force-reinstall dist/*.whl
+          rulefire test examples/tests --junit report.xml
+          test -s report.xml
+          rulefire scan examples/rules --events examples/baseline.jsonl --benign
+      - name: the README's demo must be what the tool prints
+        run: ./scripts/check-readme.sh
+
+  differential:
+    name: agree with pySigma's SQLite backend on the SigmaHQ rules
+    runs-on: ubuntu-latest
+    env:
+      # SigmaHQ/sigma at 2026-10-21; change both together with the expected counts in README.md.
+      SIGMA_COMMIT: 05d1031f537e830b76da53bae2400c5814c89165
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -e ".[differential]"
+      - name: Fetch the rules at a fixed commit
+        run: |
+          git init -q sigma
+          git -C sigma fetch -q --depth 1 https://github.com/SigmaHQ/sigma.git "$SIGMA_COMMIT"
+          git -C sigma checkout -q FETCH_HEAD
+      - run: python scripts/differential.py sigma/rules sigma/rules-emerging-threats sigma/rules-threat-hunting --show 50
+
+  secrets:
+    name: credsweep over the full commit history
+    runs-on: ubuntu-latest
+    steps:
+      # A shallow clone would let credsweep report a false all-clear.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.27'
+      - run: go install github.com/sriharifortitude/credsweep/cmd/credsweep@v0.1.4
+      # .credsweep-allow.yaml accepts two Python expressions the generic rule mistakes for secrets.
+      - run: credsweep scan --allowlist .credsweep-allow.yaml .
