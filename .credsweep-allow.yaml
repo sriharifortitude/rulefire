@@ -7,3 +7,6 @@ allow:
     reason: >-
       The keyword argument "tokens=[base64.b64encode(...)...]" in src/rulefire/values.py: code,
       not a value.
+  - fingerprint: 7b09aa2f2c7f7cd3d9406e7729f5b567f28ad3ac3b3de252a2e2158e2e0d0a7b
+    reason: >-
+      The entry above, on line 8 of this file: its reason quotes that same keyword argument.
